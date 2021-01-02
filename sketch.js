@@ -1,67 +1,113 @@
+// Daniel Shiffman
+// http://codingtra.in
+// http://patreon.com/codingtrain
 
-let r,g,b;
+// Color Predictor
+// https://youtu.be/KtPpoMThKUs
+
+// Inspired by Jabril's SEFD Science
+// https://youtu.be/KO7W0Qq8yUE
+// https://youtu.be/iN3WAko2rL8
+
+let r, g, b;
 let brain;
+
 let which = "black";
-let input;
 
-function pickColor(){
-   r = random(255);
-   g = random(255);
-   b = random(255);
-   redraw();
-}
+let wButton;
+let bButton;
 
-function colorPredictor(r,g,b){
-  input = [r / 255, g / 255, b / 255];
-  let output = brain.predict(input);
-  console.log(output);
-
-  if(output[0] < output[1]){
-    return "black";
-  }
-
-  return "white"
-}
-
-function mousePressed(){
-  let targets = [];
-  pickColor();
-
-  if(mouseX > width / 2){
-    targets = [1,0];
-  }else{
-    targets = [0,1];
-  }
-  brain.train(input, targets);
+function pickColor() {
+  r = random(255);
+  g = random(255);
+  b = random(255);
+  redraw();
 }
 
 function setup() {
-  createCanvas(600, 400);
+  createCanvas(600, 300);
   noLoop();
   brain = new NeuralNetwork(3, 3, 2);
+
+  for (let i = 0; i < 10000; i++) {
+    let r = random(255);
+    let g = random(255);
+    let b = random(255);
+    let targets = trainColor(r, g, b);
+    let inputs = [r / 255, g / 255, b / 255];
+    brain.train(inputs, targets);
+  }
+
+  pickColor();
+
+}
+
+function mousePressed() {
+  // let targets;
+  // if (mouseX > width / 2) {
+  //   targets = [0, 1];
+  // } else {
+  //   targets = [1, 0];
+  // }
+  // let inputs = [r / 255, g / 255, b / 255];
+  //
+  // brain.train(inputs, targets);
+
+
   pickColor();
 }
 
-function draw() {
 
-  background(r,g,b);
-  stroke(0);
-  line(width/2, 0, width/2, height);
-  textSize(64);
-  fill(0);
-  textAlign(CENTER);
-  noStroke();
-  text("Black",width/4, height/ 3);
-  fill(255);
-  text("White",width/1.3, height/ 3);
+function colorPredictor(r, g, b) {
+  console.log(floor(r + g + b));
+  let inputs = [r / 255, g / 255, b / 255];
+  let outputs = brain.predict(inputs);
+  //console.log(outputs);
 
-  which = colorPredictor(r,g,b);
-  if(which === "black"){
-    fill(0);
-    ellipse(width/4, height/ 2, 60);
-  }else{
-    fill(255);
-    ellipse(width/1.3, height/ 2, 60);
+  if (outputs[0] > outputs[1]) {
+    return "black";
+  } else {
+    return "white";
   }
+
+  // if (r + g + b > 300) {
+  //   return "black";
+  // } else {
+  //   return "white";
+  // }
+}
+
+function trainColor(r, g, b) {
+  if (r + g + b > (255 * 3) / 2) {
+    return [1, 0];
+  } else {
+    return [0, 1];
+  }
+}
+
+
+function draw() {
+  background(r, g, b);
+  strokeWeight(4);
+  stroke(0);
+  line(width / 2, 0, width / 2, height);
+
+  textSize(64);
+  noStroke();
+  fill(0);
+  textAlign(CENTER, CENTER);
+  text("black", 150, 100);
+  fill(255);
+  text("white", 450, 100);
+
+  let which = colorPredictor(r, g, b);
+  if (which === "black") {
+    fill(0);
+    ellipse(150, 200, 60);
+  } else {
+    fill(255);
+    ellipse(450, 200, 60);
+  }
+
 
 }
